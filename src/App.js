@@ -53,7 +53,9 @@ function App() {
           <Button id={'KA'} value={'KA'} variant='outline-success' onClick={(e) => getStations(e.currentTarget.value)}>KA</Button>
         </ButtonGroup>
       </div>
-      {seis.map(seis => <SeisPlot start={start} end={end} seis={seis} dates={dates}/>)}
+      <div className='plots'>
+        {seis.map(seis => <div className='plot'><SeisPlot start={start} end={end} seis={seis} dates={dates}/></div>)}
+      </div>
     </div>
   );
 }

@@ -3,3 +3,17 @@
   align-items: center;
   gap: 5px;
 }
+.plots {
+  display: flex;
+  flex-direction: column;
+  /* gap: 0px; */
+  /* border: 1px solid; */
+}
+.js-plotly-plot .plotly .cursor-ew-resize {
+  /* cursor: default; */
+  cursor: crosshair;
+}
+
+div.plotly-notifier {
+  visibility: hidden;
+}

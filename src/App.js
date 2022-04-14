@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import DateTimePicker from 'react-datetime-picker';
 import { miniseed } from 'seisplotjs';
-import './App.css';
 import SeisPlot from './SeisPlot';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -10,8 +9,15 @@ import { Button, ButtonGroup} from 'react-bootstrap';
 function App() {
   const [start, onStartChange] = useState(new Date('2022-03-31T18:00:00.000Z'));
   const [end, onEndChange] = useState(new Date('2022-03-31T18:01:00.000Z'));
-  const [seis, onSeismogramsChange] = useState([]);
+  // const [seis, onSeismogramsChange] = useState([]);
   const [dates, setDates] = useState([]);
+
+  const [range, setRange] = useState([start, end]);
+
+  const [seisMap, setSeis] = useState(new Map());
+  const updateMap = (key, value) => {
+    setSeis(map => new Map(map.set(key, value)));
+  }
 
   function recountDates() {
     let dates = [];
@@ -19,15 +25,21 @@ function App() {
       dates.push(new Date(start.getTime() + 5 * i));
     }
     setDates(dates);
+    console.log(dates.length);
+    setRange([start, end]);
   }
 
   function getStations(network) {
-    onSeismogramsChange([]);
+    // onSeismogramsChange([]);
     let url = 'http://84.237.89.72:8080/fdsnws/station/1/query?format=text' + (network === '' ? '' : '&net=' + network);
     fetch(url)
     .then(response => response.text())
     .then(text => text.split('\n').slice(1, -1))
-    .then(stations => stations.forEach(station => getDataFromStation(station.split('|')[1])));
+    .then(stations => stations.forEach(station => {
+      let name = station.split('|')[1];
+      updateMap(name, []);
+      getDataFromStation(name);
+    } ));
     recountDates();
   }
 
@@ -39,8 +51,7 @@ function App() {
     const response = await fetch(request);
     const records = miniseed.parseDataRecords(await response.arrayBuffer());
     let seismograms = miniseed.seismogramPerChannel(records);
-
-    onSeismogramsChange(seis => [...seis, seismograms]);
+    updateMap(station, seismograms);
   }
 
   return (
@@ -54,7 +65,7 @@ function App() {
         </ButtonGroup>
       </div>
       <div className='plots'>
-        {seis.map(seis => <div className='plot'><SeisPlot start={start} end={end} seis={seis} dates={dates}/></div>)}
+        {Array.from(seisMap).map(([k, v]) => {return v.length > 0 ? <SeisPlot range={range} setRange={setRange} seis={v} dates={dates}/> : <div/>})}
       </div>
     </div>
   );

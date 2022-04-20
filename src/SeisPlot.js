@@ -80,6 +80,9 @@ function SeisPlot(props) {
       name: trace.channelCode, 
       x: props.dates, 
       y: trace._segmentArray.length === 1 ? trace.y : merge(trace._segmentArray),
+      line: {
+        width: 1
+      }
     }
   })
   data[1].yaxis = 'y2';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DateTimePicker from 'react-datetime-picker';
-import { miniseed } from 'seisplotjs';
+import { miniseed, filter } from 'seisplotjs';
 import SeisPlot from './SeisPlot';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -8,16 +8,16 @@ import { Button, ButtonGroup} from 'react-bootstrap';
 
 function App() {
   const [start, onStartChange] = useState(new Date('2022-03-31T18:00:00.000Z'));
-  const [end, onEndChange] = useState(new Date('2022-03-31T18:01:00.000Z'));
+  const [end, onEndChange] = useState(new Date('2022-03-31T18:30:00.000Z'));
   // const [seis, onSeismogramsChange] = useState([]);
   const [dates, setDates] = useState([]);
-
   const [range, setRange] = useState([start, end]);
-
   const [seisMap, setSeis] = useState(new Map());
   const updateMap = (key, value) => {
     setSeis(map => new Map(map.set(key, value)));
   }
+
+  const chebykin = filter.createChebyshevI(4, 0.5, filter.LOW_PASS, 0, 1, 0.005); 
 
   function recountDates() {
     let dates = [];
@@ -51,6 +51,9 @@ function App() {
     const response = await fetch(request);
     const records = miniseed.parseDataRecords(await response.arrayBuffer());
     let seismograms = miniseed.seismogramPerChannel(records);
+    console.log(seismograms);
+    seismograms = seismograms.map(seismogram => filter.applyFilter(chebykin, seismogram));
+    console.log(seismograms[0]);
     updateMap(station, seismograms);
   }
 
